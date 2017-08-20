@@ -79,7 +79,7 @@ def fnt2Dict(fnt):
     return loadFolder(0xF000)
 
 
-def dict2Fnt(d):
+def dict2Fnt(d, isNarc=False):
     """
     Convert an OrderedDict representing a NDS filename table to a
     fnt.bin file, as a bytes object.
@@ -138,10 +138,20 @@ def dict2Fnt(d):
         folderEntries[folderID] = (d['first_id'], parentID, entriesTable)
         return folderID
 
-    # Not sure why the imaginary parent of the root folder has ID 0x14,
-    # but it does. Also, the assert ensures that the root folder has the
-    # proper folder ID.
-    assert parseDict(d, 0x14) == 0xF000
+    if isNarc:
+        # The root folder ID for NARC archives is the total number of
+        # folders.
+        def countFoldersIn(folder):
+            folderCount = 0
+            for _, f in folder.get('folders', {}).items():
+                folderCount += countFoldersIn(f)
+            return folderCount + 1
+        rootId = countFoldersIn(d)
+    else:
+        rootId = 0x14
+
+    # Ensure that the root folder has the proper folder ID.
+    assert parseDict(d, rootId) == 0xF000
 
     # Allocate space for the folders table at the beginning of the file
     fnt = bytearray(len(folderEntries) * 8)
@@ -179,7 +189,7 @@ def main(argv):
     isBinary = b'\0' in ind
     # Seems fragile, but really, text files will never include a null
     # byte (unless there's a null character, which is in fact valid
-    # UTF-8, but I choose not going to worry about that edge case), and
+    # UTF-8, but I choose not to worry about that edge case), and
     # fnt.bin files include the value 0xF000 near the beginning. So this
     # should work every time unless there's a null character in the JSON
     # (in which case, why do you have null characters in your JSON?)
