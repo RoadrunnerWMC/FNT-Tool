@@ -79,7 +79,7 @@ def fnt2Dict(fnt):
     return loadFolder(0xF000)
 
 
-def dict2Fnt(d, isNarc=False):
+def dict2Fnt(d):
     """
     Convert an OrderedDict representing a NDS filename table to a
     fnt.bin file, as a bytes object.
@@ -138,17 +138,13 @@ def dict2Fnt(d, isNarc=False):
         folderEntries[folderID] = (d['first_id'], parentID, entriesTable)
         return folderID
 
-    if isNarc:
-        # The root folder ID for NARC archives is the total number of
-        # folders.
-        def countFoldersIn(folder):
-            folderCount = 0
-            for _, f in folder.get('folders', {}).items():
-                folderCount += countFoldersIn(f)
-            return folderCount + 1
-        rootId = countFoldersIn(d)
-    else:
-        rootId = 0x14
+    # The root folder ID is the total number of folders.
+    def countFoldersIn(folder):
+        folderCount = 0
+        for _, f in folder.get('folders', {}).items():
+            folderCount += countFoldersIn(f)
+        return folderCount + 1
+    rootId = countFoldersIn(d)
 
     # Ensure that the root folder has the proper folder ID.
     assert parseDict(d, rootId) == 0xF000
