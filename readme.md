@@ -5,6 +5,8 @@ A simple Python script that can convert Nintendo DS filename table files ("fnt.b
 
 The FNT -> JSON code is loosely based on [NSMB Editor's fnt.bin-parsing code](https://github.com/Dirbaio/NSMB-Editor/blob/41060e965a0a918e247d913d6282260ec9e9e1fb/NSMBe4/DSFileSystem/NitroFilesystem.cs#L50). The JSON -> FNT code is entirely original.
 
+Python 3.6 or higher is required.
+
 By [RoadrunnerWMC](https://github.com/RoadrunnerWMC/). Licensed under the MIT license, 2017.
 
 
